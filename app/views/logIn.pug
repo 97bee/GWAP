@@ -1,0 +1,18 @@
+block container
+    form(id="form" method='POST' onsubmit='return submitForm("login")')
+        .row(class='col-xs-12 text-center', style='margin-top:20%;')
+            div(class='input-group')
+                div(class='input-group-addon', style='font-size:150%')
+                    span(class='glyphicon glyphicon-user')
+                input(id='username', name='username', type='text', placeholder='Username', class='form-control input-md', required='', style='font-size:170%')
+        .row(class='col-xs-12 text-center', style='margin-top:7%')
+            div(class='input-group')
+                div(class='input-group-addon', style='font-size:150%')
+                    span(class='glyphicon glyphicon-asterisk')
+                input(id='password', name='password', type='password', placeholder='Password', class='form-control input-md', required='', style='font-size:170%')
+        .row(class='col-xs-12 text-center', style='margin-top:7%')
+            input(class='btn btn-lg btn-default', type='submit' style='margin-top:6%; padding:4% ')
+    .row(class='col-xs-12 text-center', style='margin-top:20%; text-align:left')
+        button(type="button", class="btn btn-default btn-arrow-left", onclick='loadPage("home")', style='font-size:120%') Back
+            
+    

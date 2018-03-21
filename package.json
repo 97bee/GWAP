@@ -1,0 +1,32 @@
+{
+  "name": "gwap",
+  "version": "1.0.0",
+  "description": "Game With A Purpose",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Bernice Thomas",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt-nodejs": "0.0.3",
+    "body-parser": "^1.18.2",
+    "connect": "^3.6.6",
+    "connect-flash": "^0.1.1",
+    "connect-mongo": "^2.0.1",
+    "cookie": "^0.3.1",
+    "eslint": "^4.16.0",
+    "express": "^4.16.2",
+    "express-session": "^1.15.6",
+    "express-ws": "^3.0.0",
+    "http": "0.0.0",
+    "mongoose": "^5.0.3",
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0",
+    "pug": "^2.0.0-rc.4",
+    "session.io": "^1.0.0",
+    "wordnet": "^0.1.2",
+    "wordnet-magic": "^0.3.0",
+    "wordnetjs": "^0.3.0"
+  }
+}

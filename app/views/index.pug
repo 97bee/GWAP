@@ -1,0 +1,13 @@
+extends blank.pug
+block container
+    if authenticated
+        include loggedIn.pug
+    else
+        .row(class='col-xs-12 text-center', style='margin-top:7%')
+            button(class='btn btn-lg btn-default', type='submit' style='margin-top:6%; padding:4% ', onclick='loadPage("login")') Log in
+        .row(class='col-xs-12 text-center')
+            button(class='btn btn-lg btn-default', type='submit', style='margin-top:6%; padding:4% ', onclick='loadPage("signup")') Sign Up
+        .row(class='col-xs-12 text-center')
+            button(class='btn btn-lg btn-default', type='submit', style='margin-top:6%; padding:4% ') Play as Guest
+        .row(class='col-xs-12 text-center', style='margin-bottom:5%')
+            button(class='btn btn-lg btn-default', type='submit', style='margin-top:6%; padding:4% ', onclick='loadPage("leaderboard")') View High scores
