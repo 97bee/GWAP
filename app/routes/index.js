@@ -106,6 +106,14 @@ module.exports = function(passport) {
       res.render('game', {message: req.flash('message')});
     });
    
+    router.get('/highscore', function(req, res){
+      if(!req.user){
+        return res.json({highscore: 40});
+      }else{
+        return res.json({highscore:req.user.highscore});
+      }
+    });
+
     router.post('/register', passport.authenticate('local-signup', {
       successRedirect: '/',
       failureRedirect: '/register',

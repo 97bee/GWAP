@@ -15,4 +15,4 @@ const matchedWordsSchema    = mongoose.Schema({
 var isValidmatch = function(keyword, enteredword, relation){// this function checkes if the word enetered is a valid match, if it isnt there at all, we add it
     //return any(keyword, matchedWord.keyword), enteredword, ;
 }
-module.exports = mongoose.model('matchedWords', matchedWordsSchema); //this string matchedWords will always refer to this keyword schema
+module.exports = mongoose.model('MatchedWords', matchedWordsSchema); //this string matchedWords will always refer to this keyword schema
