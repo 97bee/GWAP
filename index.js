@@ -17,6 +17,7 @@ const database      = require('./config/database')
 
 // Database
 mongoose.connect(database.url);
+//mongoose.connect('mongodb://c1528155:7Caecanol@csmongo.cs.cf.ac.uk');
 require('./app/models');
 
 require('./config/passport')(passport);

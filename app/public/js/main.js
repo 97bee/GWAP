@@ -174,6 +174,7 @@ var answers=0
 
 socket.on('connect', function () {
     console.log("Connected");
+    console.log(socket);
 });
 
 socket.on('created', function () {
