@@ -1,6 +1,6 @@
 block container
     form(id="form", method='POST', onsubmit='return submitForm("signup")')
-        .row(class='col-xs-12 text-center', style='margin-top:15%;')
+        .row(class='col-xs-12 text-center', style='margin-top:10%;')
             div(class='input-group')
                 div(class='input-group-addon', style='font-size:150%')
                     span(class='glyphicon glyphicon-envelope')
@@ -14,31 +14,33 @@ block container
             div(class='input-group')
                 div(class='input-group-addon', style='font-size:150%')
                     span(class='glyphicon glyphicon-asterisk')
-                input(id='password', name='password', type='password', placeholder='Password', class='form-control input-md', required='', style='font-size:170%')
+                input(id='password', name='password',onkeyup='check();', type='password', placeholder='Password', class='form-control input-md', required='', style='font-size:170%')
         .row(class='col-xs-12 text-center', style='margin-top:7%')
             div(class='input-group')
                 div(class='input-group-addon', style='font-size:150%')
                     span(class='glyphicon glyphicon-asterisk')
-                input(id='confirm_password', name='confirm_password', type='password', placeholder='Confirm Password', class='form-control input-md', required='', style='font-size:170%')
+                input(id='confirm_password', onkeyup='check();', name='confirm_password', type='password', placeholder='Confirm Password', class='form-control input-md', required='', style='font-size:170%')
+            span(id='message') Please Complete All fields 
         .row(class='col-xs-12 text-center', style='margin-top:7%')
-            button(class='btn btn-lg btn-default', type='submit' style='margin-top:6%; padding:4% ') Sign Up
+            button(class='btn btn-lg btn-default',id='submit_btn' type='submit' style='margin-top:6%; padding:4%; disabled=true') Sign Up
     .row(class='col-xs-12 text-center', style='margin-top:0%; text-align:left')
         button(type="button", class="btn btn-default btn-arrow-left", onclick='loadPage("home")', style='font-size:120%') Back
     
     script. 
-        var password = document.getElementById("password")
-        var confirm_password = document.getElementById("confirm_password");
-        function validatePassword(){
-            if( password.value != confirm_password.value ) {
-                confirm_password.setCustomValidity("Passwords Don't Match");
-            }else{
-                confirm_password.setCustomValidity('');
+        var check = function() {
+            if (document.getElementById('password').value ==document.getElementById('confirm_password').value) {
+                if(document.getElementById('password').value==""){
+                    document.getElementById('message').style.color = 'red';
+                    document.getElementById('message').innerHTML = 'You must enter a password';
+                    document.getElementById('submit_btn').disabled = true;
+                }else{
+                    document.getElementById('message').style.color = 'green';
+                    document.getElementById('message').innerHTML = 'Passwords match';
+                    document.getElementById('submit_btn').disabled = false;
+                }
+            }else {
+                document.getElementById('message').style.color = 'red';
+                document.getElementById('message').innerHTML = 'Passwords do not match!';
+                document.getElementById('submit_btn').disabled = true;
             }
         }
-        password.onchange = validatePassword;
-        confirm_password.onkeyup = validatePassword;
-    //User.count({_id: userID}, function (err, count){ 
-    //if(count>0){
-        //document exists });
-    //}
-    //}); //this function will check if the username already exists

@@ -1,11 +1,10 @@
 const express   = require('express');
 const router    = express.Router();
-var wordNet = require('wordnet-magic');
 module.exports = function(passport) {
  
     router.get('/', function(req, res) {
       if(req.user){
-        res.render('index', { username: req.user.username, authenticated: true });
+        res.render('index', { username: req.user.username, authenticated: true, highscore:req.user.highscore });
       }else{
         res.render('index', { authenticated: false });
       }
@@ -27,7 +26,7 @@ module.exports = function(passport) {
           if(loginerror){
             return res.render('login');
           }
-          return res.render('loggedIn');
+          return res.render('loggedIn', {highscore:user.highscore});
         });
       })(req, res, next);
     });
@@ -48,14 +47,13 @@ module.exports = function(passport) {
           if(loginerror) {
             return next(loginerror);
           }
-          return res.render('loggedIn');
+          return res.render('loggedIn', {highscore:user.highscore});
         });
       })(req, res, next);
     });
 
     router.get('/leaderboard', function(req,res){
       res.render('leaderboard');
-      //here i will say: if user is logged in: show them their high score and overall position, else just show the top 10.
     });
 
     router.get('/rules', function(req,res){
@@ -108,7 +106,7 @@ module.exports = function(passport) {
    
     router.get('/highscore', function(req, res){
       if(!req.user){
-        return res.json({highscore: 40});
+        return res.json({highscore: 0});
       }else{
         return res.json({highscore:req.user.highscore});
       }

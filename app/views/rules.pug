@@ -1,5 +1,16 @@
 block container
-    h2(style='margin-top:4%;') Welcome to Wordify!
-    p(style='margin-top:5%;') Here is where the rules will be, it will go on bla bla bla bla 
-    row(class='col-xs-12 text-center', style='margin-top:7%')
-        button(class='btn btn-lg btn-default', type='submit' style='margin-top:6%; padding:4% ', onclick='loadPage("loggedIn")') Back
+    h2(style="margin-top:4%; text-align:'center'") The Rules
+    ul(style='font-size:115%;') 1) Choose Your mode! 
+        li(style="margin-left:15%;") Same Meanings-Synonyms
+        li(style="margin-left:15%;") Generic Terms- Hypernyms
+        li(style="margin-left:15%;") Opposites- Atonyms
+        li(style="margin-left:15%;") Classic- A mix of all 3!
+    ul(style='font-size:115%;') 2) Choose Your Opponent type! 
+        li(style="margin-left:15%;")   P vs P - Play against another player online! 
+        li(style="margin-left:15%;") P vs C - Play against a bot! 
+    ul(style='font-size:115%;') 3) Time to start the game!
+        li(style="margin-left:15%;") You have 60 seconds to play the game ! 
+        li(style="margin-left:15%;") Each correct word that you and your oppoenent match on will give you +100 points 
+        li(style="margin-left:15%;") If you or your oppoent skip on a word, you will both loose 50 points!
+    row(class='col-xs-12 text-center', style='margin-top:4%')
+        button(class='btn btn-lg btn-default', type='submit' style='margin-top:0%; padding:4%; ', onclick='loadHomePage()') Back
