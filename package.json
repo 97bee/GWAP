@@ -26,6 +26,7 @@
     "passport-local": "^1.0.0",
     "pug": "^2.0.0-rc.4",
     "session.io": "^1.0.0",
+    "socket.io": "^2.1.0",
     "wordnetjs": "^0.3.0"
   }
 }
