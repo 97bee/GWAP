@@ -21,7 +21,9 @@ module.exports = function(io) {
             console.log("userid: "+ socket.userId)
 
             socket.on('findGame', function (data, t) {
-                console.log("userid: "+ socket.userId)
+                if(userId==null){
+                   //we need to call something to get an ID. 
+                }
                 console.log('Find Game');
                 var t = new Date();
                 t.setSeconds(t.getSeconds() + 7);
@@ -50,7 +52,7 @@ module.exports = function(io) {
                             var client = io.sockets.connected[clientId]; 
                             if(client.userId == room.host.id) {
                                 if(client.userId!=socket.userId){//if the room is not created by the user
-                                    // update with opponent and started
+                                    // update with opponent and started time
                                     room.opponent=client.userId;
                                     var roomEndedAt = new Date();
                                     roomEndedAt.setSeconds(roomEndedAt.getSeconds() + 68);
@@ -59,10 +61,7 @@ module.exports = function(io) {
                                         if (err) return console.error(err);
                                     });
                                     socket.opponent = clientId;
-                                    console.log(socket);
                                     client.opponent = socket.id;
-                                    console.log(client);
-                                    console.log(socket);
                                     client.emit('joined', t, room.id);//tells the players we have joined and also sends t, the start time for the game.
                                     socket.emit('joined', t, room.id);
                                     setTimeout(function(){getRandomWordFromKeywordsSchema(data.mode, room.id, room.endedAt, room.score, "newgame")},7700);
@@ -540,6 +539,7 @@ module.exports = function(io) {
 
             socket.on('disconnect', function () {
                 io.emit('user disconnected');
+                console.log("disconnected")
             });
         }
     });
