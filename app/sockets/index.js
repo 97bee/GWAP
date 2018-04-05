@@ -22,7 +22,7 @@ module.exports = function(io) {
             console.log(socket.request.session.passport);
 
             socket.on('findGame', function (data, t) {
-                if(userId==null){
+                if(socket.userId==null){
                    console.log('there is no userid');
                 }
                 console.log('Find Game');
