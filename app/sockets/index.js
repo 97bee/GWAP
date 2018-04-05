@@ -10,19 +10,14 @@ const Keywords      = mongoose.model('Keywords');
 const MatchedWords  = mongoose.model('MatchedWords'); 
 const wn            = require("wordnetjs");
 
-//i want this to happen only when you are logged in
 module.exports = function(io) {
     io.on('connection', function (socket) {
         console.log("Connected");
 
-        console.log(socket.request.session);
         if(socket.request.session.passport.user) {//this is being called before you have logged in
             socket.userId = socket.request.session.passport.user;
             console.log("userid: "+ socket.userId);
             
-            if(socket.userId==null){
-                //grrrrrrrrrrrrrrrr this is empty when logged in grrrrrrrrrrrr
-            }
 
 
             socket.on('findGame', function (data, t) {
@@ -129,7 +124,7 @@ module.exports = function(io) {
                             console.log("Create Game: " + newgame.keyword);
                             socket.emit('scoreUpdate', score);
                             MatchedWords.find(
-                                { keyword:keyword.keyword, relation:mode, numberOfMatches:{ $gt: 3 } }).exec(function(err, matchedwords) {
+                                { keyword:keyword.keyword, relation:mode, numberOfMatches:{ $gt: 8 } }).exec(function(err, matchedwords) {
                                 if(matchedwords){
                                     var taboowords=[];
                                     if(matchedwords.length>0){
@@ -282,7 +277,7 @@ module.exports = function(io) {
                             socket.emit('scoreUpdate', score);
                             client.emit('scoreUpdate', score);
                             MatchedWords.find(
-                                { keyword:keyword.keyword, relation:mode, numberOfMatches:{ $gt: 3 } }).exec(function(err, matchedwords) {
+                                { keyword:keyword.keyword, relation:mode, numberOfMatches:{ $gt: 8 } }).exec(function(err, matchedwords) {
                                 if(matchedwords){
                                     var taboowords=[];
                                     if(matchedwords.length>0){
@@ -438,7 +433,7 @@ module.exports = function(io) {
                                             if (err) return console.error(err);
                                         });
                                     }
-                                    if(numberofthematches < 10) {
+                                    if(numberofthematches < 5) {
                                         var mode=game.relation;
                                         var gameWord=game.keyword;
                                         var answers = checkWord(gameWord, mode)
