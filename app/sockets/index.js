@@ -18,11 +18,12 @@ module.exports = function(io) {
 
         if(socket.request.session.passport) {
             socket.userId = socket.request.session.passport.user;
-            console.log("userid: "+ socket.userId)
+            console.log("userid: "+ socket.userId);
+            console.log(socket.request.session.passport);
 
             socket.on('findGame', function (data, t) {
                 if(userId==null){
-                   //we need to call something to get an ID. 
+                   console.log('there is no userid');
                 }
                 console.log('Find Game');
                 var t = new Date();
@@ -539,7 +540,6 @@ module.exports = function(io) {
 
             socket.on('disconnect', function () {
                 io.emit('user disconnected');
-                console.log("disconnected")
             });
         }
     });
