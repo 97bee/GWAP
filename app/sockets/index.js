@@ -18,8 +18,10 @@ module.exports = function(io) {
 
         if(socket.request.session.passport) {
             socket.userId = socket.request.session.passport.user;
+            console.log("userid: "+ socket.userId)
 
             socket.on('findGame', function (data, t) {
+                console.log("userid: "+ socket.userId)
                 console.log('Find Game');
                 var t = new Date();
                 t.setSeconds(t.getSeconds() + 7);
