@@ -124,7 +124,7 @@ module.exports = function(io) {
                             console.log("Create Game: " + newgame.keyword);
                             socket.emit('scoreUpdate', score);
                             MatchedWords.find(
-                                { keyword:keyword.keyword, relation:mode, numberOfMatches:{ $gt: 8 } }).exec(function(err, matchedwords) {
+                                { keyword:keyword.keyword, relation:mode, numberOfMatches:{ $gt: 9 } }).exec(function(err, matchedwords) {
                                 if(matchedwords){
                                     var taboowords=[];
                                     if(matchedwords.length>0){
@@ -204,7 +204,7 @@ module.exports = function(io) {
                                                                     if (err) return console.error(err);
                                                                 });
                                                             }
-                                                            if(numberofthematches < 10) {
+                                                            if(numberofthematches < 5) {//if the word has matched less than 5 times, we will check it with wordnet
                                                                 var mode=game.relation;
                                                                 var gameWord=game.keyword;
                                                                 var answers = checkWord(gameWord, mode)          
@@ -433,7 +433,7 @@ module.exports = function(io) {
                                             if (err) return console.error(err);
                                         });
                                     }
-                                    if(numberofthematches < 5) {
+                                    if(numberofthematches < 5) {//if the word has matched less than 5 times, we will check it with wordnet
                                         var mode=game.relation;
                                         var gameWord=game.keyword;
                                         var answers = checkWord(gameWord, mode)
