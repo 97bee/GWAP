@@ -10,71 +10,74 @@ const Keywords      = mongoose.model('Keywords');
 const MatchedWords  = mongoose.model('MatchedWords'); 
 const wn            = require("wordnetjs");
 
-//i want this to happen only when you go onto the pvp page.
+//i want this to happen only when you are logged in
 module.exports = function(io) {
-
     io.on('connection', function (socket) {
         console.log("Connected");
 
-        if(socket.request.session.passport) {
+        console.log(socket.request.session);
+        if(socket.request.session.passport.user) {//this is being called before you have logged in
             socket.userId = socket.request.session.passport.user;
             console.log("userid: "+ socket.userId);
-            console.log(socket.request.session.passport);
+            
+            if(socket.userId==null){
+                //grrrrrrrrrrrrrrrr this is empty when logged in grrrrrrrrrrrr
+            }
+
 
             socket.on('findGame', function (data, t) {
-                if(socket.userId==null){
-                   console.log('there is no userid');
-                }
-                console.log('Find Game');
-                var t = new Date();
-                t.setSeconds(t.getSeconds() + 7);
-                var noDate = new Date(0);
-                Room.findOne({ gamemode:data.mode, endedAt: noDate, startedAt: noDate, opponent:null },)
-                //finds a game that hasnt started, with no opponent ans of the same gamemode
-                .populate({
-                    path: 'host',
-                    model: 'User'
-                })//adds host stuff
-                .exec(function(err, room) {
-                    if(!room || room.host==null){
-                        console.log('Cant find a Game that hasnt started');
-                        // Create a new Room if there is not one
-                        var now = new Date();
-                        var newroom = new Room({ gamemode: data.mode, host : socket.userId, createdAt: now, startedAt: noDate, endedAt: noDate, score: 0 });
-                        newroom.save(function (err) {
-                            if (err) return console.error(err);
-                        });
-                        socket.emit('created');
-                    }else{
-                        console.log('Found a Game that hasnt started');
-                        // Found a Room
-                        var clients = io.sockets.clients().sockets;// gets all the clients that are connected
-                        for (var clientId in clients ) {//goes through all the clients that are connected
-                            var client = io.sockets.connected[clientId]; 
-                            if(client.userId == room.host.id) {
-                                if(client.userId!=socket.userId){//if the room is not created by the user
-                                    // update with opponent and started time
-                                    room.opponent=client.userId;
-                                    var roomEndedAt = new Date();
-                                    roomEndedAt.setSeconds(roomEndedAt.getSeconds() + 68);
-                                    room.endedAt=roomEndedAt;
-                                    room.save(function (err) {
-                                        if (err) return console.error(err);
-                                    });
-                                    socket.opponent = clientId;
-                                    client.opponent = socket.id;
-                                    client.emit('joined', t, room.id);//tells the players we have joined and also sends t, the start time for the game.
-                                    socket.emit('joined', t, room.id);
-                                    setTimeout(function(){getRandomWordFromKeywordsSchema(data.mode, room.id, room.endedAt, room.score, "newgame")},7700);
-                                    break;
-                                }else{
-                                    console.log('Game was created by own player, going to waiting room');
-                                    socket.emit('created');
+                    console.log('Find Game');
+                    console.log(socket.userId);
+                    var t = new Date();
+                    t.setSeconds(t.getSeconds() + 7);
+                    var noDate = new Date(0);
+                    Room.findOne({ gamemode:data.mode, endedAt: noDate, startedAt: noDate, opponent:null },)
+                    //finds a game that hasnt started, with no opponent ans of the same gamemode
+                    .populate({
+                        path: 'host',
+                        model: 'User'
+                    })//adds host stuff
+                    .exec(function(err, room) {
+                        if(!room || room.host==null){
+                            console.log('Cant find a Game that hasnt started');
+                            // Create a new Room if there is not one
+                            var now = new Date();
+                            var newroom = new Room({ gamemode: data.mode, host : socket.userId, createdAt: now, startedAt: noDate, endedAt: noDate, score: 0 });
+                            newroom.save(function (err) {
+                                if (err) return console.error(err);
+                            });
+                            socket.emit('created');
+                        }else{
+                            console.log('Found a Game that hasnt started');
+                            // Found a Room
+                            var clients = io.sockets.clients().sockets;// gets all the clients that are connected
+                            for (var clientId in clients ) {//goes through all the clients that are connected
+                                var client = io.sockets.connected[clientId]; 
+                                if(client.userId == room.host.id) {
+                                    if(client.userId!=socket.userId){//if the room is not created by the user
+                                        // update with opponent and started time
+                                        room.opponent=client.userId;
+                                        var roomEndedAt = new Date();
+                                        roomEndedAt.setSeconds(roomEndedAt.getSeconds() + 68);
+                                        room.endedAt=roomEndedAt;
+                                        room.save(function (err) {
+                                            if (err) return console.error(err);
+                                        });
+                                        socket.opponent = clientId;
+                                        client.opponent = socket.id;
+                                        client.emit('joined', t, room.id);//tells the players we have joined and also sends t, the start time for the game.
+                                        socket.emit('joined', t, room.id);
+                                        setTimeout(function(){getRandomWordFromKeywordsSchema(data.mode, room.id, room.endedAt, room.score, "newgame")},7700);
+                                        break;
+                                    }else{
+                                        console.log('Game was created by own player, going to waiting room');
+                                        socket.emit('created');
+                                    }
                                 }
                             }
                         }
-                    }
-                });
+                    });
+
             });
 
             socket.on('computerGame', function (data, t) {
@@ -82,7 +85,7 @@ module.exports = function(io) {
                 var t = new Date();
                 var startTime=new Date();
                 var endTime=new Date();
-                var compID=mongoose.Types.ObjectId("5ac24be26aa0f0ad13c15a34");
+                var compID=mongoose.Types.ObjectId("5ac6638f0501800014622195");
                 console.log("hello");
                 var endTime=endTime.setSeconds(startTime.getSeconds()+69);
                 t.setSeconds(t.getSeconds() + 7);
@@ -165,7 +168,7 @@ module.exports = function(io) {
                                 if(answer=="Y"){
                                     console.log("Y, i will now make a guess");
                                     var guess="";//the guess that has been generated
-                                    var userId="5ac24be26aa0f0ad13c15a34"
+                                    var userId="5ac6638f0501800014622195"
                                     Game.findOne({room:roomId}, {}, { sort: { '_id' : -1 } }, function(err, game) {
                                         console.log( game );//game is the most recently created game with the room id: roomId.
                                         MatchedWords.findOne({keyword:game.keyword, relation:game.relation}, function(err, word){
@@ -317,7 +320,7 @@ module.exports = function(io) {
                     room.save(function (err) {
                         if (err) return console.error(err);
                     });
-                    if(opponent.toString()=="5ac24be26aa0f0ad13c15a34"){
+                    if(opponent.toString()=="5ac6638f0501800014622195"){
                         console.log("the player passed against computer")
                         getRandomWordFromKeywordsSchemaVSComputer(roommode, roomId, room.endedAt, newScore, "pass")
                     }else{
@@ -448,7 +451,7 @@ module.exports = function(io) {
                                             room.save(function (err) {
                                                 if (err) return console.error(err);
                                             });
-                                            if(opponent.toString()=="5ac24be26aa0f0ad13c15a34"){
+                                            if(opponent.toString()=="5ac6638f0501800014622195"){
                                                 getRandomWordFromKeywordsSchemaVSComputer(roommode, roomId, room.endedAt, newScore, "guess", guess);
                                             }else{
                                                 getRandomWordFromKeywordsSchema(roommode, roomId, room.endedAt, newScore, "guess", guess);

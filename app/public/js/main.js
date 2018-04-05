@@ -156,8 +156,10 @@ function submitForm(uri){
         data: $('#form').serialize(),
         success: function(data){
             if(uri=='login'){
-                loadHomePage()
+                createSocket();
+                loadHomePage();
             }else{
+                createSocket();
                 $("#container").html(data);
             }
         }
@@ -165,81 +167,86 @@ function submitForm(uri){
     return false;
 }
 
-var socket = io(); 
+var socket = null;
 var roomId=0;
 var gameId=0;
 var endGametime=0
 var t=0
 var answers=0
 
-socket.on('connect', function () {
-    console.log("Connected");
-    console.log(socket);
-});
+function createSocket() {
 
-socket.on('created', function () {
-    console.log("Created");
-    loadPage('searching');//once they have created a game, take them to the searching game
-});
+    socket = io(); 
 
-socket.on('hereAreTheHighscores',function(topUsers){
-    highScoreTable(topUsers);
-    console.log(topUsers)
-});
+    socket.on('connect', function () {
+        console.log("Connected");
+        console.log(socket);
+    });
 
-socket.on('hereIsUsersTheHighscores', function(user){
-    updateHighscore(user)
-})
+    socket.on('created', function () {
+        console.log("Created");
+        loadPage('searching');//once they have created a game, take them to the searching game
+    });
 
-socket.on('scoreUpdate', function(newScore) {
-    updateScore(newScore);
-    console.log("Score updated to : "+ newScore);
-    currentGameScore=newScore;
-    if(newScore>highScore){
-        highScore=newScore
-    }
-});
+    socket.on('hereAreTheHighscores',function(topUsers){
+        highScoreTable(topUsers);
+        console.log(topUsers)
+    });
 
-socket.on('tabooWords', function(taboowords) {
-    updateTabooWords(taboowords);
-});
+    socket.on('hereIsUsersTheHighscores', function(user){
+        updateHighscore(user)
+    })
 
-socket.on('opponentQuit', function(){
-    loadHomePage();
-    alert("Your Opponent Quit!");
-})
+    socket.on('scoreUpdate', function(newScore) {
+        updateScore(newScore);
+        console.log("Score updated to : "+ newScore);
+        currentGameScore=newScore;
+        if(newScore>highScore){
+            highScore=newScore
+        }
+    });
 
-socket.on('joined', function (t, room) {
-    countdown(t);//once they have joined, go to the countdown page.
-    console.log("Joined: " + t);
-    roomId=room;
-});
+    socket.on('tabooWords', function(taboowords) {
+        updateTabooWords(taboowords);
+    });
 
-socket.on('newword', function(keyword, mode, game, roomEndedAt, firstWord){
-    console.log("New Word: " + keyword);
-    gameId=game;
-    console.log(firstWord)
-    newgame(keyword, mode, roomEndedAt, firstWord);
-    answers=answers;
-});
+    socket.on('opponentQuit', function(){
+        loadHomePage();
+        alert("Your Opponent Quit!");
+    })
 
-socket.on('match', function(guess){
-    body="You matched on " + guess;
-    playerNotification("Matched Word!", body);
-});
+    socket.on('joined', function (t, room) {
+        countdown(t);//once they have joined, go to the countdown page.
+        console.log("Joined: " + t);
+        roomId=room;
+    });
 
-socket.on('youPassed', function(guess){
-    playerNotification("You Passes", "You Passed");
-});
+    socket.on('newword', function(keyword, mode, game, roomEndedAt, firstWord){
+        console.log("New Word: " + keyword);
+        gameId=game;
+        console.log(firstWord)
+        newgame(keyword, mode, roomEndedAt, firstWord);
+        answers=answers;
+    });
 
-socket.on('ComputerPassed', function(guess){
-    playerNotification("Computer Passed!", "Computer Passed!");
-});
+    socket.on('match', function(guess){
+        body="You matched on " + guess;
+        playerNotification("Matched Word!", body);
+    });
+
+    socket.on('youPassed', function(guess){
+        playerNotification("You Passes", "You Passed");
+    });
+
+    socket.on('ComputerPassed', function(guess){
+        playerNotification("Computer Passed!", "Computer Passed!");
+    });
 
 
-socket.on('opponentPassed', function(guess){
-    playerNotification("Your Opponent Passed!", "Your Opponent Passed");
-});
+    socket.on('opponentPassed', function(guess){
+        playerNotification("Your Opponent Passed!", "Your Opponent Passed");
+    });
+}
 
 function findComputerGame(){
     var chosenmode= document.getElementById("modeChooser").value;
