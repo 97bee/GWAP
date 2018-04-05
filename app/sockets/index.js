@@ -20,10 +20,6 @@ module.exports = function(io) {
             socket.userId = socket.request.session.passport.user;
 
             socket.on('findGame', function (data, t) {
-                var wekeyword = new keywords({ keyword:"little", mode:"A" });
-                wekeyword.save(function (err) {
-                    if (err) return console.error(err);
-                });
                 console.log('Find Game');
                 var t = new Date();
                 t.setSeconds(t.getSeconds() + 7);
