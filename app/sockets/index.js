@@ -9,6 +9,9 @@ const User          = mongoose.model('User');
 const Keywords      = mongoose.model('Keywords');
 const MatchedWords  = mongoose.model('MatchedWords'); 
 const wn            = require("wordnetjs");
+var taboowordlimit=25;//number of matches needed to consider a word a taboo word
+var correctmatchlevel=15;//number of matches needed to not consult wordnet if answer is valid
+
 
 module.exports = function(io) {
     io.on('connection', function (socket) {
@@ -124,7 +127,7 @@ module.exports = function(io) {
                             console.log("Create Game: " + newgame.keyword);
                             socket.emit('scoreUpdate', score);
                             MatchedWords.find(
-                                { keyword:keyword.keyword, relation:mode, numberOfMatches:{ $gt: 9 } }).exec(function(err, matchedwords) {
+                                { keyword:keyword.keyword, relation:mode, numberOfMatches:{ $gt: taboowordlimit } }).exec(function(err, matchedwords) {
                                 if(matchedwords){
                                     var taboowords=[];
                                     if(matchedwords.length>0){
@@ -154,6 +157,7 @@ module.exports = function(io) {
             }
             
             function machineGuesser(mode, roomId, roomEndedAt){
+                var correct=false;
                 var looper=setInterval(function(){
                     if((new Date())<roomEndedAt){
                         Room.count({_id: roomId}, function (err, count){ 
@@ -166,69 +170,86 @@ module.exports = function(io) {
                                     var userId="5ac6638f0501800014622195"
                                     Game.findOne({room:roomId}, {}, { sort: { '_id' : -1 } }, function(err, game) {
                                         console.log( game );//game is the most recently created game with the room id: roomId.
-                                        MatchedWords.findOne({keyword:game.keyword, relation:game.relation}, function(err, word){
-                                            if(!word){
-                                                console.log("there are no matchedwords for: "+ game.keyword);
-                                                console.log("In this case the computer should pass on the wor without loosing any points.");
-                                                Room.findById(roomId, function(err, room) {
-                                                    var currentScore=room.score;
-                                                    getRandomWordFromKeywordsSchemaVSComputer(mode, roomId, roomEndedAt, currentScore, "computerpass");
-                                                });
-                                            }else{
-                                                var guess=word.matchedWord;
-                                                if(game){
-                                                    var currentGuesses = game.guesses;
-                                                    var isMatch = false;
-                                                    for(var i=0; i<currentGuesses.length; i++) {
-                                                        var guesser=currentGuesses[i].player;  
-                                                        if(guesser != userId && currentGuesses[i].guess == guess ) {
-                                                            isMatch = true;
-                                                        }
-                                                    }
-                                                    game.guesses.push({player: userId, guess: guess }); //add the guess to the system if it is not found
-                                                    game.save(function (err) {
-                                                        if (err) return console.error(err);
-                                                    });    
-                                                    if(isMatch) { //if there is a match in the game
-                                                        MatchedWords.findOne({ keyword:game.keyword, matchedWord: guess, relation:game.relation }).exec(function(err, matchedwords) {
-                                                            var numberofthematches = 0;
-                                                            if(!matchedwords){
-                                                                var newMatchedWords = new MatchedWords({ keyword:game.keyword, matchedWord: guess, relation:game.relation, numberOfMatches:1 });
-                                                                newMatchedWords.save(function (err) {
-                                                                    if (err) return console.error(err);
-                                                                });
-                                                            }else{
-                                                                numberofthematches = matchedwords.numberOfMatches;
-                                                                matchedwords.numberOfMatches=numberofthematches+1;
-                                                                matchedwords.save(function (err) {
-                                                                    if (err) return console.error(err);
-                                                                });
+                                        MatchedWords.count({keyword:game.keyword, relation:game.relation}).exec(function (err, count) {
+                                            // Get a random entry
+                                            if(count>0){
+                                                var random = Math.floor(Math.random() * count)
+                                                // query all keywords, fetch one offset by random number and with correct mode
+                                                MatchedWords.findOne({keyword:game.keyword, relation:game.relation}).skip(random).exec(function(err, word){
+                                                    if(!word){
+                                                        console.log("there are no matchedwords for: "+ game.keyword);
+                                                        console.log("In this case the computer should pass on the wor without loosing any points.");
+                                                        Room.findById(roomId, function(err, room) {
+                                                            var currentScore=room.score;
+                                                            getRandomWordFromKeywordsSchemaVSComputer(mode, roomId, roomEndedAt, currentScore, "computerpass");
+                                                        });
+                                                    }else{
+                                                        var guess=word.matchedWord;
+                                                        console.log("i am guessing : "+ String(guess));
+                                                        if(game){
+                                                            var currentGuesses = game.guesses;
+                                                            var isMatch = false;
+                                                            for(var i=0; i<currentGuesses.length; i++) {
+                                                                var guesser=currentGuesses[i].player;  
+                                                                if(guesser != userId && currentGuesses[i].guess == guess ) {
+                                                                    isMatch = true;
+                                                                }
                                                             }
-                                                            if(numberofthematches < 5) {//if the word has matched less than 5 times, we will check it with wordnet
-                                                                var mode=game.relation;
-                                                                var gameWord=game.keyword;
-                                                                var answers = checkWord(gameWord, mode)          
-                                                                if(answers.has(guess)){
-                                                                    Room.findById(roomId, function(err, room) {
-                                                                        var currentScore=room.score;
-                                                                        var newScore=currentScore+100;
-                                                                        room.score=newScore;
-                                                                        room.save(function (err) {
+                                                            game.guesses.push({player: userId, guess: guess }); //add the guess to the system if it is not found
+                                                            game.save(function (err) {
+                                                                if (err) return console.error(err);
+                                                            });    
+                                                            if(isMatch) { //if there is a match in the game
+                                                                MatchedWords.findOne({ keyword:game.keyword, matchedWord: guess, relation:game.relation }).exec(function(err, matchedwords) {
+                                                                    var numberofthematches = 0;
+                                                                    if(!matchedwords){
+                                                                        var newMatchedWords = new MatchedWords({ keyword:game.keyword, matchedWord: guess, relation:game.relation, numberOfMatches:1 });
+                                                                        newMatchedWords.save(function (err) {
                                                                             if (err) return console.error(err);
                                                                         });
-                                                                        getRandomWordFromKeywordsSchemaVSComputer(room.gamemode, roomId, room.endedAt, newScore, "computerpass");
-                                                                    });
-                                                                }else{
-                                                                    console.log(guess)
-                                                                    console.log("Wordnet says no!");
-                                                                }
-                                                                
+                                                                    }else{
+                                                                        numberofthematches = matchedwords.numberOfMatches;
+                                                                        matchedwords.numberOfMatches=numberofthematches+1;
+                                                                        matchedwords.save(function (err) {
+                                                                            if (err) return console.error(err);
+                                                                        });
+                                                                    }
+                                                                    console.log("numberofmatches: "+ numberofthematches);
+                                                                    if(numberofthematches < correctmatchlevel) {//if the word has matched less than 5 times, we will check it with wordnet
+                                                                        var mode=game.relation;
+                                                                        var gameWord=game.keyword;
+                                                                        var answers = checkWord(gameWord, mode)
+                                                                        console.log(answers);          
+                                                                        if(answers.has(guess)){
+                                                                            correct=true;
+                                                                        }
+                                                                    }else if(numberofthematches>taboowordlimit){
+                                                                        correct=false;//taboo word!!
+                                                                    }else{correct=true;
+                                                                    }
+                                                                    if(correct){
+                                                                        Room.findById(roomId, function(err, room) {
+                                                                            var currentScore=room.score;
+                                                                            var newScore=currentScore+100;
+                                                                            room.score=newScore;
+                                                                            room.save(function (err) {
+                                                                                if (err) return console.error(err);
+                                                                            });
+                                                                            getRandomWordFromKeywordsSchemaVSComputer(room.gamemode, roomId, room.endedAt, newScore, "computerpass");
+                                                                        });
+                                                                    }else{
+                                                                        console.log(guess)
+                                                                        console.log("Wordnet says no!"); 
+                                                                    }
+
+                                                                });
                                                             }
-                                                        });
+                                                        }
                                                     }
-                                                }
+                                                });
                                             }
                                         });
+
                                     });
                                 }
                             }else{clearInterval(looper);}
@@ -277,7 +298,7 @@ module.exports = function(io) {
                             socket.emit('scoreUpdate', score);
                             client.emit('scoreUpdate', score);
                             MatchedWords.find(
-                                { keyword:keyword.keyword, relation:mode, numberOfMatches:{ $gt: 8 } }).exec(function(err, matchedwords) {
+                                { keyword:keyword.keyword, relation:mode, numberOfMatches:{ $gt: taboowordlimit } }).exec(function(err, matchedwords) {
                                 if(matchedwords){
                                     var taboowords=[];
                                     if(matchedwords.length>0){
@@ -401,6 +422,7 @@ module.exports = function(io) {
                 var gameId=data.game;
                 var roomId=data.room;
                 var userId= socket.userId;
+                var correct=false;
             
                 Room.findById(roomId, function(err, room) {
                     var roommode=room.gamemode;
@@ -433,30 +455,39 @@ module.exports = function(io) {
                                             if (err) return console.error(err);
                                         });
                                     }
-                                    if(numberofthematches < 5) {//if the word has matched less than 5 times, we will check it with wordnet
+                                    console.log("numberofmatches: "+ numberofthematches);
+                                    if(numberofthematches < correctmatchlevel) {//if the word has matched less than 5 times, we will check it with wordnet
                                         var mode=game.relation;
                                         var gameWord=game.keyword;
                                         var answers = checkWord(gameWord, mode)
                                         console.log(answers);          
                                         if(answers.has(guess)){
-                                            var currentScore=room.score;
-                                            var newScore=currentScore+100;
-                                            room.score=newScore;
-                                            opponent=room.opponent;
-                                            room.save(function (err) {
-                                                if (err) return console.error(err);
-                                            });
-                                            if(opponent.toString()=="5ac6638f0501800014622195"){
-                                                getRandomWordFromKeywordsSchemaVSComputer(roommode, roomId, room.endedAt, newScore, "guess", guess);
-                                            }else{
-                                                getRandomWordFromKeywordsSchema(roommode, roomId, room.endedAt, newScore, "guess", guess);
-                                            }
-                                            
-                                        }else{
-                                            console.log(guess)
-                                            console.log("Wordnet says no!");
+                                            correct=true;
                                         }
+                                    }else if(numberofthematches>taboowordlimit){
+                                        correct=false;//taboo word!!
+                                    }else{
+                                        correct=true;
+                                    }                   
+                                    if(correct){
+                                        var currentScore=room.score;
+                                        var newScore=currentScore+100;
+                                        room.score=newScore;
+                                        opponent=room.opponent;
+                                        room.save(function (err) {
+                                            if (err) return console.error(err);
+                                        });
+                                        if(opponent.toString()=="5ac6638f0501800014622195"){
+                                                getRandomWordFromKeywordsSchemaVSComputer(roommode, roomId, room.endedAt, newScore, "guess", guess);
+                                        }else{
+                                            getRandomWordFromKeywordsSchema(roommode, roomId, room.endedAt, newScore, "guess", guess);
+                                        }
+                                            
+                                    }else{
+                                        console.log(guess)
+                                        console.log("Wordnet says no!");
                                     }
+                                    
                                 });
                             }
                         }
