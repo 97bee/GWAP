@@ -12,70 +12,71 @@ const wn            = require("wordnetjs");
 var taboowordlimit=25;//number of matches needed to consider a word a taboo word
 var correctmatchlevel=15;//number of matches needed to not consult wordnet if answer is valid
 
-
 module.exports = function(io) {
     io.on('connection', function (socket) {
         console.log("Connected");
 
-        if(socket.request.session.passport.user) {//this is being called before you have logged in
+        if(socket.request.session.passport.user) {
             socket.userId = socket.request.session.passport.user;
             console.log("userid: "+ socket.userId);
             
-
+            
+            //console.log("bright:");
+            //wordnettester("bright");
+            
 
             socket.on('findGame', function (data, t) {
-                    console.log('Find Game');
-                    console.log(socket.userId);
-                    var t = new Date();
-                    t.setSeconds(t.getSeconds() + 7);
-                    var noDate = new Date(0);
-                    Room.findOne({ gamemode:data.mode, endedAt: noDate, startedAt: noDate, opponent:null },)
-                    //finds a game that hasnt started, with no opponent ans of the same gamemode
-                    .populate({
-                        path: 'host',
-                        model: 'User'
-                    })//adds host stuff
-                    .exec(function(err, room) {
-                        if(!room || room.host==null){
-                            console.log('Cant find a Game that hasnt started');
-                            // Create a new Room if there is not one
-                            var now = new Date();
-                            var newroom = new Room({ gamemode: data.mode, host : socket.userId, createdAt: now, startedAt: noDate, endedAt: noDate, score: 0 });
-                            newroom.save(function (err) {
-                                if (err) return console.error(err);
-                            });
-                            socket.emit('created');
-                        }else{
-                            console.log('Found a Game that hasnt started');
-                            // Found a Room
-                            var clients = io.sockets.clients().sockets;// gets all the clients that are connected
-                            for (var clientId in clients ) {//goes through all the clients that are connected
-                                var client = io.sockets.connected[clientId]; 
-                                if(client.userId == room.host.id) {
-                                    if(client.userId!=socket.userId){//if the room is not created by the user
-                                        // update with opponent and started time
-                                        room.opponent=client.userId;
-                                        var roomEndedAt = new Date();
-                                        roomEndedAt.setSeconds(roomEndedAt.getSeconds() + 68);
-                                        room.endedAt=roomEndedAt;
-                                        room.save(function (err) {
-                                            if (err) return console.error(err);
-                                        });
-                                        socket.opponent = clientId;
-                                        client.opponent = socket.id;
-                                        client.emit('joined', t, room.id);//tells the players we have joined and also sends t, the start time for the game.
-                                        socket.emit('joined', t, room.id);
-                                        setTimeout(function(){getRandomWordFromKeywordsSchema(data.mode, room.id, room.endedAt, room.score, "newgame")},7700);
-                                        break;
-                                    }else{
-                                        console.log('Game was created by own player, going to waiting room');
-                                        socket.emit('created');
-                                    }
+                console.log('Find Game');
+                console.log(socket.userId);
+                var t = new Date();
+                t.setSeconds(t.getSeconds() + 7);
+                var noDate = new Date(0);
+                Room.findOne({ gamemode:data.mode, endedAt: noDate, startedAt: noDate, opponent:null },)
+                //finds a game that hasnt started, with no opponent ans of the same gamemode
+                .populate({
+                    path: 'host',
+                    model: 'User'
+                })//adds host stuff
+                .exec(function(err, room) {
+                    if(!room || room.host==null){
+                        console.log('Cant find a Game that hasnt started');
+                        // Create a new Room if there is not one
+                        var now = new Date();
+                        var newroom = new Room({ gamemode: data.mode, host : socket.userId, createdAt: now, startedAt: noDate, endedAt: noDate, score: 0 });
+                        newroom.save(function (err) {
+                            if (err) return console.error(err);
+                        });
+                        socket.emit('created');
+                    }else{
+                        console.log('Found a Game that hasnt started');
+                        // Found a Room
+                        var clients = io.sockets.clients().sockets;// gets all the clients that are connected
+                        for (var clientId in clients ) {//goes through all the clients that are connected
+                            var client = io.sockets.connected[clientId]; 
+                            if(client.userId == room.host.id) {
+                                if(client.userId!=socket.userId){//if the room is not created by the user
+                                    // update with opponent and started time
+                                    room.opponent=client.userId;
+                                    var roomEndedAt = new Date();
+                                    roomEndedAt.setSeconds(roomEndedAt.getSeconds() + 68);
+                                    room.endedAt=roomEndedAt;
+                                    room.save(function (err) {
+                                        if (err) return console.error(err);
+                                    });
+                                    socket.opponent = clientId;
+                                    client.opponent = socket.id;
+                                    client.emit('joined', t, room.id);//tells the players we have joined and also sends t, the start time for the game.
+                                    socket.emit('joined', t, room.id);
+                                    setTimeout(function(){getRandomWordFromKeywordsSchema(data.mode, room.id, room.endedAt, room.score, "newgame")},7700);
+                                    break;
+                                }else{
+                                    console.log('Game was created by own player, going to waiting room');
+                                    socket.emit('created');
                                 }
                             }
                         }
-                    });
-
+                    }
+                });
             });
 
             socket.on('computerGame', function (data, t) {
@@ -330,7 +331,7 @@ module.exports = function(io) {
                 Room.findById(roomId, function(err, room) {
                     var roommode=room.gamemode;
                     var currentScore=room.score;
-                    var newScore=currentScore-100;
+                    var newScore=currentScore-50;
                     room.score=newScore
                     var opponent=room.opponent;
                     room.save(function (err) {
@@ -522,15 +523,6 @@ module.exports = function(io) {
                     }
                 });
             });
-
-            socket.on("leaderboardScores", function(data){
-                User.find({}).sort({highscore: -1}).select('username highscore -_id').limit(10).exec( 
-                    function(err, topUsers) {
-                        socket.emit('hereAreTheHighscores', topUsers);
-                    }
-                );
-            });
-
             socket.on("playerHasQuit", function(data){
                 console.log(socket.opponent);
                 var client = io.sockets.connected[socket.opponent];
@@ -564,6 +556,66 @@ module.exports = function(io) {
                 
 
             });
+
+            function wordnettester(gameWord){
+                var allSynonyms = new Set(); 
+                var allHypernyms = new Set(); 
+                var allAntonyms = new Set(); 
+                var synonyms = wn.synonyms(gameWord);
+                for(var i=0; i<synonyms.length; i++){
+                    var closeSynonyms = synonyms[i].close;
+                    var farSynonyms = synonyms[i].far;    
+                    for(var j=0; j<closeSynonyms.length; j++){
+                        allSynonyms.add(closeSynonyms[j]);
+                    }
+                    for(var j=0; j<farSynonyms.length; j++){
+                        allSynonyms.add(farSynonyms[j]);
+                    }
+                }
+                var antonyms = wn.antonyms(gameWord);
+                for(var i=0; i<antonyms.length; i++){
+                    var words = antonyms[i].words;
+                    for(var j=0; j<allSynonyms.length; j++){
+                        var closeSynonym = allSynonyms[j];
+                        var closeAntonyms = wn.antonyms(closeSynonym.toLowerCase());
+                        for(var k=0; k<closeAntonyms.length; k++){
+                            var closeWords = closeAntonyms[k].words;
+                            for(var l=0; l<closeWords.length; l++){
+                                allAntonyms.add(closeWords[l]);
+                            }
+                        }
+                    }
+                    for(var j=0; j<words.length; j++){
+                        allAntonyms.add(words[j]);
+                    }
+                }
+                var hypernyms=wn.lookup(gameWord);
+                for(var i=0; i<hypernyms.length; i++){
+                    var category = hypernyms[i].syntactic_category;
+                    if(category == "Noun"){
+                        var relations = hypernyms[i].relationships.type_of;
+                        for(var j=0; j<relations.length; j++){
+                            var relationId = relations[j];
+                            var relationWord = wn.lookup(relationId);
+                            for(var k=0; k<relationWord.length; k++){
+                                var hypernymWords = relationWord[k].words;
+                                for(var l=0; l<hypernymWords.length; l++){
+                                    allHypernyms.add(hypernymWords[l]);
+                                }
+                            }
+                        }
+                    }
+                }
+                console.log("hypernymps:");
+                console.log(allHypernyms);
+                console.log("synonyms:");
+                console.log(allSynonyms);
+                console.log("atonyms:");
+                console.log(allAntonyms); 
+            }  
+
+
+
 
             //need to create a function that removed the connection between the client and the oppoent at the end of a game or if they quit
 

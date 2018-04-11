@@ -28,9 +28,6 @@ function countdown(t) {
         }
     }, 1000);
 }
-function loadleaderboard(){
-    socket.emit("leaderboardScores");
-}
 
 
 function loadHomePage(){
@@ -40,7 +37,7 @@ function loadHomePage(){
         success: function(data){
             highScore=data.highscore;
             console.log(highScore);
-            $("#container").html('<div style="margin-top:2%;" class="row"> <div style=" text-align:left; padding-left:2%, margin-top:5%;" class="col-xs-6"> <button type="submit" onclick="logout()" class="btn btn-lg btn-default">Log Out</button> </div> <div style=" text-align:right; padding-right:2%" class="col-xs-6"> <h3 style="text-align:right; display:inline" id="highscore">High Score: 0</h3> </div> </div> <div style="margin-top:15%;" class="row"> <div style=" text-align:left; padding-left:20%" class="col-xs-6"> <button type="submit" style="padding: 4% 20% 4%; font-size:200%" onclick="findGame()" class="btn btn-lg btn-default">P VS P </button> <!--this button will first check if there is a table row in room, in the same game mode as the one selected that hasnt started or ended, if there isnt it will add a new one and take the user to th searching page, --> <!--if there is a available game it will go to the countdown page and will beguin the countdown for the game to start.--> <h2><span style="padding-left:14%; padding-right:14%" class="glyphicon glyphicon-user"></span> <p style="display:inline"> </p><span style="padding-left:5%" class="glyphicon glyphicon-user"></span> </h2> </div> <div style="text-align:right; padding-right:20%" class="col-xs-6"> <button type="submit" style="padding: 4% 20% 4%; font-size:200%" onclick="findComputerGame()" class="btn btn-lg btn-default">P VS C</button> <!--Once this button is clicked the countdown will begin--> <h2> <span style="padding-left:10%; padding-right:14%" class="glyphicon glyphicon-user"></span> <p style="display:inline"> </p><span style="padding-left:5%; padding-right:2%;" class="glyphicon glyphicon-open"></span> </h2> </div> </div> <div style="text-align:center; margin-top:7%;" class="row"> <select style="font-size:200%;" id="modeChooser" class="selectpicker"> <option>Classic</option> <option>Same Meanings</option> <option>Gerneric Terms</option> <option>Opposites</option> </select> </div> <div style="text-align:center; margin-top:1%;" class="row"> <button type="submit" style="padding:3% 6% 3% 6%; font-size:150%" onclick="loadleaderboard()" class="btn btn-lg btn-default">View High scores</button> </div> <div style="text-align:right; margin-top:7%; margin-right:3%;" class="row"> <button type="submit" style="padding:2% 4% 2%; font-size:150%" onclick="loadPage(&quot;rules&quot;)" class="btn btn-lg btn-default">?</button> </div>');
+            $("#container").html('<div style="margin-top:2%;" class="row"> <div style=" text-align:left; padding-left:2%, margin-top:5%;" class="col-xs-6"> <button type="submit" onclick="logout()" class="btn btn-lg btn-default">Log Out</button> </div> <div style=" text-align:right; padding-right:2%" class="col-xs-6"> <h3 style="text-align:right; display:inline" id="highscore">High Score: 0</h3> </div> </div> <div style="margin-top:15%;" class="row"> <div style=" text-align:left; padding-left:20%" class="col-xs-6"> <button type="submit" style="padding: 4% 20% 4%; font-size:200%" onclick="findGame()" class="btn btn-lg btn-default">P VS P </button> <!--this button will first check if there is a table row in room, in the same game mode as the one selected that hasnt started or ended, if there isnt it will add a new one and take the user to th searching page, --> <!--if there is a available game it will go to the countdown page and will beguin the countdown for the game to start.--> <h2><span style="padding-left:14%; padding-right:14%" class="glyphicon glyphicon-user"></span> <p style="display:inline"> </p><span style="padding-left:5%" class="glyphicon glyphicon-user"></span> </h2> </div> <div style="text-align:right; padding-right:20%" class="col-xs-6"> <button type="submit" style="padding: 4% 20% 4%; font-size:200%" onclick="findComputerGame()" class="btn btn-lg btn-default">P VS C</button> <!--Once this button is clicked the countdown will begin--> <h2> <span style="padding-left:10%; padding-right:14%" class="glyphicon glyphicon-user"></span> <p style="display:inline"> </p><span style="padding-left:5%; padding-right:2%;" class="glyphicon glyphicon-open"></span> </h2> </div> </div> <div style="text-align:center; margin-top:7%;" class="row"> <select style="font-size:200%;" id="modeChooser" class="selectpicker"> <option>Classic</option> <option>Same Meanings</option> <option>Gerneric Terms</option> <option>Opposites</option> </select> </div> <div style="text-align:center; margin-top:1%;" class="row"> <button type="submit" style="padding:3% 6% 3% 6%; font-size:150%" onclick="highScoreTable(true)" class="btn btn-lg btn-default">View High scores</button> </div> <div style="text-align:right; margin-top:7%; margin-right:3%;" class="row"> <button type="submit" style="padding:2% 4% 2%; font-size:150%" onclick="loadPage(&quot;rules&quot;)" class="btn btn-lg btn-default">?</button> </div>');
             var score = document.getElementById("highscore").innerHTML = ("High Score: " + (highScore));
         }
     });
@@ -48,19 +45,30 @@ function loadHomePage(){
     clearInterval(x);
 }
 
-function highScoreTable(top10scores){
+function highScoreTable(loggedin){
+    if(loggedin){
     $('#container').html(' <table id="highScoreTable" class="table table-bordered table-hover table-responsive" style="margin-top:10%"><thead><tr bgcolor="#ffa834"><th>Position</th><th>Username</th><th>Score</th></tr></thead></table> <div style="text-align:center; " class="row"><button type="submit" style="margin-top:6%; padding:4%; " onclick="loadHomePage()" class="btn btn-lg btn-default"> Back </button></div>')
-    for(var i = 0; i < top10scores.length; i++){
-        var table = document.getElementById("highScoreTable");
-        var row = table.insertRow(i+1);
-        var position = row.insertCell(0);
-        var username = row.insertCell(1);
-        var tableplayerscore=row.insertCell(2);
-        // Add some text to the new cells:
-        position.innerHTML = i+1;
-        username.innerHTML = top10scores[i].username;
-        tableplayerscore.innerHTML=top10scores[i].highscore;
+    }else{
+        $('#container').html(' <table id="highScoreTable" class="table table-bordered table-hover table-responsive" style="margin-top:10%"><thead><tr bgcolor="#ffa834"><th>Position</th><th>Username</th><th>Score</th></tr></thead></table> <div style="text-align:center; " class="row"><button type="submit" style="margin-top:6%; padding:4%; " onclick="loadPage(false)" class="btn btn-lg btn-default"> Back </button></div>')
     }
+    $.ajax({
+        url: '/highscores',
+        type: 'GET',
+        success: function(data){
+            top10scores=data.highscores;
+            for(var i = 0; i < top10scores.length; i++){
+                var table = document.getElementById("highScoreTable");
+                var row = table.insertRow(i+1);
+                var position = row.insertCell(0);
+                var username = row.insertCell(1);
+                var tableplayerscore=row.insertCell(2);
+                // Add some text to the new cells:
+                position.innerHTML = i+1;
+                username.innerHTML = top10scores[i].username;
+                tableplayerscore.innerHTML=top10scores[i].highscore;
+            }
+        }
+    });
 }
 
 function playerNotification(title, matchBody){
@@ -118,6 +126,9 @@ function updateScore(score){
 }
 
 function loadPage(page) {
+    if(page==false){
+        page="home";
+    }
     $.ajax({
         url: page,
         success: function(data){
@@ -186,11 +197,6 @@ function createSocket() {
     socket.on('created', function () {
         console.log("Created");
         loadPage('searching');//once they have created a game, take them to the searching game
-    });
-
-    socket.on('hereAreTheHighscores',function(topUsers){
-        highScoreTable(topUsers);
-        console.log(topUsers)
     });
 
     socket.on('hereIsUsersTheHighscores', function(user){

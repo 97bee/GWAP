@@ -1,5 +1,7 @@
 const express   = require('express');
 const router    = express.Router();
+const mongoose      = require('mongoose');
+const Users          = mongoose.model('User');
 module.exports = function(passport) {
  
     router.get('/', function(req, res) {
@@ -110,6 +112,14 @@ module.exports = function(passport) {
       }else{
         return res.json({highscore:req.user.highscore});
       }
+    });
+    router.get('/highscores', function(req, res){
+      Users.find({}).sort({highscore: -1}).select('username highscore -_id').limit(10).exec( 
+        function(err, topUsers) {
+          return res.json({highscores:topUsers});
+        }
+      );
+      
     });
 
     router.post('/register', passport.authenticate('local-signup', {
