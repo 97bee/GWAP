@@ -9,15 +9,12 @@ function countdown(t) {
     var t=Date.parse(t);
     t= new Date(t);
     k= new Date(t);
-    t=t.getSeconds();
-    littletimer=7
+    littletimer=7;
     var x = setInterval(function() {
         // Get date and time
         var now = new Date();
         var now = now.getSeconds();
-        var distancecountdown = t - now;
-        console.log(distancecountdown);
-        littletimer=littletimer-1
+        littletimer=littletimer-1;
         document.getElementById("countdown").innerHTML = littletimer + "s ";
         // If the count down is finished, say go! 
         if ((new Date())>=k){

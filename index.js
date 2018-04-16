@@ -16,8 +16,9 @@ const flash         = require('connect-flash');
 const database      = require('./config/database')
 
 // Database
+//mongoose.connect('mongodb://c1528155:mYh3Rp6QUzzmP3H@csmongo.cs.cf.ac.uk:27017/c1528155');
 //mongoose.connect(database.url);
-mongoose.connect('mongodb://admin:wowow1234@ds119449.mlab.com:19449/heroku_xfw6k262');
+mongoose.connect('mongodb://admin:wowow1234@ds153948.mlab.com:53948/heroku_5lmnn29z');
 require('./app/models');
 
 require('./config/passport')(passport);

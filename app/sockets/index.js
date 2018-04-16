@@ -11,7 +11,7 @@ const MatchedWords  = mongoose.model('MatchedWords');
 const wn            = require("wordnetjs");
 var taboowordlimit=25;//number of matches needed to consider a word a taboo word
 var correctmatchlevel=15;//number of matches needed to not consult wordnet if answer is valid
-
+var computerplayerID="5ad49ace7c73840cb5db1230"
 module.exports = function(io) {
     io.on('connection', function (socket) {
         console.log("Connected");
@@ -19,11 +19,8 @@ module.exports = function(io) {
         if(socket.request.session.passport.user) {
             socket.userId = socket.request.session.passport.user;
             console.log("userid: "+ socket.userId);
-            
-            
-            //console.log("bright:");
-            //wordnettester("bright");
-            
+            //console.log("lamp:");
+            //wordnettester("lamp");
 
             socket.on('findGame', function (data, t) {
                 console.log('Find Game');
@@ -84,7 +81,7 @@ module.exports = function(io) {
                 var t = new Date();
                 var startTime=new Date();
                 var endTime=new Date();
-                var compID=mongoose.Types.ObjectId("5ac6638f0501800014622195");
+                var compID=mongoose.Types.ObjectId(computerplayerID);
                 console.log("hello");
                 var endTime=endTime.setSeconds(startTime.getSeconds()+69);
                 t.setSeconds(t.getSeconds() + 7);
@@ -168,7 +165,7 @@ module.exports = function(io) {
                                 if(answer=="Y"){
                                     console.log("Y, i will now make a guess");
                                     var guess="";//the guess that has been generated
-                                    var userId="5ac6638f0501800014622195"
+                                    var userId=computerplayerID
                                     Game.findOne({room:roomId}, {}, { sort: { '_id' : -1 } }, function(err, game) {
                                         console.log( game );//game is the most recently created game with the room id: roomId.
                                         MatchedWords.count({keyword:game.keyword, relation:game.relation}).exec(function (err, count) {
@@ -337,7 +334,7 @@ module.exports = function(io) {
                     room.save(function (err) {
                         if (err) return console.error(err);
                     });
-                    if(opponent.toString()=="5ac6638f0501800014622195"){
+                    if(opponent.toString()==computerplayerID){
                         console.log("the player passed against computer")
                         getRandomWordFromKeywordsSchemaVSComputer(roommode, roomId, room.endedAt, newScore, "pass")
                     }else{
@@ -478,7 +475,7 @@ module.exports = function(io) {
                                         room.save(function (err) {
                                             if (err) return console.error(err);
                                         });
-                                        if(opponent.toString()=="5ac6638f0501800014622195"){
+                                        if(opponent.toString()==computerplayerID){
                                                 getRandomWordFromKeywordsSchemaVSComputer(roommode, roomId, room.endedAt, newScore, "guess", guess);
                                         }else{
                                             getRandomWordFromKeywordsSchema(roommode, roomId, room.endedAt, newScore, "guess", guess);
