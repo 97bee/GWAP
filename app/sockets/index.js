@@ -160,8 +160,8 @@ module.exports = function(io) {
                     if((new Date())<roomEndedAt){
                         Room.count({_id: roomId}, function (err, count){ 
                             if(count>0){
-                                var willIMakeAGuess = ['Y', 'Y', 'N'];
-                                answer=willIMakeAGuess[Math.floor(Math.random() * 3)]
+                                var willIMakeAGuess = ['Y','Y', 'Y', 'N'];
+                                answer=willIMakeAGuess[Math.floor(Math.random() * 4)]
                                 if(answer=="Y"){
                                     console.log("Y, i will now make a guess");
                                     var guess="";//the guess that has been generated
@@ -194,6 +194,7 @@ module.exports = function(io) {
                                                                 }
                                                             }
                                                             game.guesses.push({player: userId, guess: guess }); //add the guess to the system if it is not found
+                                                            game.correctMatch=guess;
                                                             game.save(function (err) {
                                                                 if (err) return console.error(err);
                                                             });    
@@ -233,7 +234,7 @@ module.exports = function(io) {
                                                                             room.save(function (err) {
                                                                                 if (err) return console.error(err);
                                                                             });
-                                                                            getRandomWordFromKeywordsSchemaVSComputer(room.gamemode, roomId, room.endedAt, newScore, "computerpass");
+                                                                            getRandomWordFromKeywordsSchemaVSComputer(room.gamemode, roomId, room.endedAt, newScore, "guess", guess);
                                                                         });
                                                                     }else{
                                                                         console.log(guess)
@@ -325,22 +326,28 @@ module.exports = function(io) {
             socket.on("pass", function(data){
                 var gameId=data.game;
                 var roomId=data.room;
-                Room.findById(roomId, function(err, room) {
-                    var roommode=room.gamemode;
-                    var currentScore=room.score;
-                    var newScore=currentScore-50;
-                    room.score=newScore
-                    var opponent=room.opponent;
-                    room.save(function (err) {
+                Game.findById(gameId, function(err,game){
+                    game.correctMatch="Pass";
+                    game.save(function (err) {
                         if (err) return console.error(err);
+                    });  
+                    Room.findById(roomId, function(err, room) {
+                        var roommode=room.gamemode;
+                        var currentScore=room.score;
+                        var newScore=currentScore-50;
+                        room.score=newScore
+                        var opponent=room.opponent;
+                        room.save(function (err) {
+                            if (err) return console.error(err);
+                        });
+                        if(opponent.toString()==computerplayerID){
+                            console.log("the player passed against computer")
+                            getRandomWordFromKeywordsSchemaVSComputer(roommode, roomId, room.endedAt, newScore, "pass")
+                        }else{
+                            var client = io.sockets.connected[socket.opponent];
+                            getRandomWordFromKeywordsSchema(roommode, roomId, room.endedAt, newScore, "pass");
+                        }
                     });
-                    if(opponent.toString()==computerplayerID){
-                        console.log("the player passed against computer")
-                        getRandomWordFromKeywordsSchemaVSComputer(roommode, roomId, room.endedAt, newScore, "pass")
-                    }else{
-                        var client = io.sockets.connected[socket.opponent];
-                        getRandomWordFromKeywordsSchema(roommode, roomId, room.endedAt, newScore, "pass");
-                    }
                 });
 
             });
@@ -416,30 +423,31 @@ module.exports = function(io) {
             }
             
             socket.on("wordGuess", function(data){
-                var guess =data.guess.toLowerCase();
-                var gameId=data.game;
-                var roomId=data.room;
-                var userId= socket.userId;
-                var correct=false;
+                var guess  = data.guess.toLowerCase();
+                var gameId = data.game;
+                var roomId = data.room;
+                var userId = socket.userId;
+                var correct= false;
             
-                Room.findById(roomId, function(err, room) {
+                Room.findById(roomId, function(err, room){
                     var roommode=room.gamemode;
-                    Game.findById(gameId, function(err, game) {
+                    Game.findById(gameId, function(err, game){
                         if(game){
                             var currentGuesses = game.guesses;
                             var isMatch = false;
-                            for(var i=0; i<currentGuesses.length; i++) {
+                            for(var i=0; i<currentGuesses.length; i++){
                                 var guesser=currentGuesses[i].player;  
-                                if(guesser != userId && currentGuesses[i].guess == guess ) {
+                                if(guesser != userId && currentGuesses[i].guess == guess ){
                                     isMatch = true;
                                 }
                             }
                             game.guesses.push({player: userId, guess: guess }); //add the guess to the system if it is not found
+                            game.correctMatch=guess;
                             game.save(function (err) {
                                 if (err) return console.error(err);
                             });    
                             if(isMatch) { //if there is a match in the game
-                                MatchedWords.findOne({ keyword:game.keyword, matchedWord: guess, relation:game.relation }).exec(function(err, matchedwords) {
+                                MatchedWords.findOne({ keyword:game.keyword, matchedWord: guess, relation:game.relation }).exec(function(err, matchedwords){
                                     var numberofthematches = 0;
                                     if(!matchedwords){
                                         var newMatchedWords = new MatchedWords({ keyword:game.keyword, matchedWord: guess, relation:game.relation, numberOfMatches:1 });
@@ -454,7 +462,9 @@ module.exports = function(io) {
                                         });
                                     }
                                     console.log("numberofmatches: "+ numberofthematches);
-                                    if(numberofthematches < correctmatchlevel) {//if the word has matched less than 5 times, we will check it with wordnet
+                                    if(numberofthematches>taboowordlimit){
+                                        correct=false;//taboo word!!
+                                    }else if(numberofthematches < correctmatchlevel) {//if the word has matched less than 5 times, we will check it with wordnet
                                         var mode=game.relation;
                                         var gameWord=game.keyword;
                                         var answers = checkWord(gameWord, mode)
@@ -462,11 +472,7 @@ module.exports = function(io) {
                                         if(answers.has(guess)){
                                             correct=true;
                                         }
-                                    }else if(numberofthematches>taboowordlimit){
-                                        correct=false;//taboo word!!
-                                    }else{
-                                        correct=true;
-                                    }                   
+                                    }                  
                                     if(correct){
                                         var currentScore=room.score;
                                         var newScore=currentScore+100;
@@ -501,6 +507,14 @@ module.exports = function(io) {
                     }else{
                         roomscore=room.score;
                         var userId= socket.userId;
+                        Game.find({room:roomId}).select('keyword relation guesses correctMatch -_id').exec(
+                            function(err, gameguesses) {
+                                try{
+                                    socket.emit('matches', gameguesses);
+                                    //client.emit('matches', gameguesses);
+                                }catch(error){console.error(error)}
+                            }
+                        );
                         User.findById(userId, function(err, user) {
                             if(user){
                                 if(user.highscore<roomscore){

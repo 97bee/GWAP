@@ -73,11 +73,11 @@ function playerNotification(title, matchBody){
     $("#informationBar").fadeIn(500);
     setTimeout(function(){  
         $("#informationBar").fadeOut(500); 
-    }, 1200);
+    }, 1400);
 }
 
 function newgame(keyword, mode, roomEndedAt, firstWord){
-    $('#container').html('<div class="row" style="margin-top:4%;"><div class="col-xs-6" style=" text-align:left; padding-left:2%;"><h3 id="countdown">Time left:</h3></div><div class="col-xs-6" style=" text-align:right; padding-right:2%;"><h3 id="score">Score: </h3></div></div><div class="row"><div class="col-xs-4"><div class="container" style="background: #ffa834; border: 2px solid #000000; height:50%; margin-top:40%; width:100%;"><h4 style="width:110%;">Taboo Words:</h4><ul id="tabooList" style="list-style: none"></ul></div></div><div class="col-xs-4"><h3 style="width:120%;" id="mode" name="mode">Another word that means...</h3><h1 style="font-size:350%; margin-top:40%;" id="keyword" name="keyword"></h1></div><div class="col-xs-4"><div class="container" style="background: #ffa834; border: 2px solid #000000; height:50%; margin-top:40%; width:100%;"><h4>Your Words:</h4><ul id="guessList" style="list-style: none"></ul></div></div></div><div class="row"><div class="col-xs-10" style=" text-align:left; padding-left:2%;"><form id="form" onsubmit="addToGuessList(); sendWord(guess.value); return false;"><input class="form-control input-md" id="guess" name="guess" type="text" placeholder="Guesses" required="" style="font-size:180%; text-align:center; width:98%; margin-left:1%; margin-top:3%;"></form></div><div class="col-xs-2" style=" text-align:left; padding-left:.5%;"><button class="btn btn-danger" type="button" style="font-size:140%; display:inline; margin-top:10%;" onclick="pass();">Pass</button></div></div><div style="text-align:center; " class="row"><button type="submit" style="padding:4%; " onclick="playerhasquit(); loadHomePage()" class="btn btn-lg btn-default"> Quit </button></div><div id="informationBar" style="position:absolute; opacity: 0.8;background-color: orange; opacity:0.8; background-color:#ccc; padding:25%; position:fixed; width:100%; height:100%; top:0px; left:0px; z-index:1000; text-align:center; display:none;"><h1 style="font-size:130%; background-color:#ffa834" id="informationBarText">test</h1></div>');//<div class="row" id="informationBar" style="position:absolute; opacity: 0.8;background-color: <h1 id="informationBarText" style="width:100%">Some text some message..</h1></div>
+    $('#container').html('<div class="row" style="margin-top:4%;"><div class="col-xs-6" style=" text-align:left; padding-left:2%;"><h3 id="countdown">Time left:</h3></div><div class="col-xs-6" style=" text-align:right; padding-right:2%;"><h3 id="score">Score: </h3></div></div><div class="row"><div class="col-xs-4"><div class="container" style="background: #ffa834; border: 2px solid #000000; height:50%; margin-top:40%; width:100%;"><h4 style="width:110%;">Taboo Words:</h4><ul id="tabooList" style="list-style: none"></ul></div></div><div class="col-xs-4"><h3 style="width:120%;" id="mode" name="mode">Another word that means...</h3><h1 style="font-size:350%; margin-top:40%; margin-left:-15%;" id="keyword" name="keyword"></h1></div><div class="col-xs-4"><div class="container" style="background: #ffa834; border: 2px solid #000000; height:50%; margin-top:40%; width:100%;"><h4>Your Words:</h4><ul id="guessList" style="list-style: none"></ul></div></div></div><div class="row"><div class="col-xs-10" style=" text-align:left; padding-left:2%;"><form id="form" onsubmit="addToGuessList(); sendWord(guess.value); return false;"><input class="form-control input-md" id="guess" name="guess" type="text" placeholder="Guesses" required="" style="font-size:180%; text-align:center; width:98%; margin-left:1%; margin-top:3%;"></form></div><div class="col-xs-2" style=" text-align:left; padding-left:.5%;"><button class="btn btn-danger" type="button" style="font-size:140%; display:inline; margin-top:10%;" onclick="pass();">Pass</button></div></div><div style="text-align:center; " class="row"><button type="submit" style="padding:4%; " onclick="playerhasquit(); loadHomePage()" class="btn btn-lg btn-default"> Quit </button></div><div id="informationBar" style="position:absolute; opacity: 0.8;background-color: orange; opacity:0.8; background-color:#ccc; padding:25%; position:fixed; width:100%; height:100%; top:0px; left:0px; z-index:1000; text-align:center; display:none;"><h1 style="font-size:400%; background-color:#ffa834" id="informationBarText">test</h1></div>');//<div class="row" id="informationBar" style="position:absolute; opacity: 0.8;background-color: <h1 id="informationBarText" style="width:100%">Some text some message..</h1></div>
     if(mode=="H"){
         var modetext="More Generic Term for ..."
     }else if(mode=="S"){
@@ -102,7 +102,7 @@ function newgame(keyword, mode, roomEndedAt, firstWord){
             if ((new Date())>=endGametime){
                 clearInterval(x)
                 socket.emit('gameOver', { room: roomId });
-                $('#container').html("<div class='row', style='margin-top:2%;'><div class='col-xs-12', style=' text-align:right; padding-right:2%'><h3 style='text-align:right' id='highScoretext'> High Score: 0</h3></div></div><div class='row', style='margin-top:10%; text-align:center;'><h1 style='font-size:350%' id='gameScore'> You Scored: 0</h1></div><div class='row', style='margin-top:3%; text-align:center;'><button class='btn btn-lg btn-default', type='submit', style='padding: 4% 10% 4%; font-size:200%' onclick='loadHomePage()'> Home</button></div><div class='row', style='margin-top:3%; text-align:center;'> <button class='btn btn-lg btn-default', type='submit', style='padding:2% 6% 2%; font-size:150%', onclick='loadPage('leaderboard')'> View High scores </button></div>");
+                $('#container').html("<div class='row', style='margin-top:2%;'><div class='col-xs-12', style=' text-align:right; padding-right:2%'><h3 style='text-align:right' id='highScoretext'> High Score: 0</h3></div></div><div class='row', style='margin-top:5%; text-align:center;'><h1 style='font-size:350%' id='gameScore'> You Scored: 0</h1></div><div class='row', style='margin-top:3%; text-align:center;'><button class='btn btn-lg btn-default', type='submit', style='padding: 4% 10% 4%; font-size:200%' onclick='loadHomePage()'> Home</button></div><div class='row', style='margin-top:3%; text-align:center;'> <button class='btn btn-lg btn-default', type='submit', style='padding:2% 6% 2%; font-size:150%', onclick='highScoreTable(true)'> View High scores </button></div><div class='row' style='padding-left: 5%; padding-top: 5%; padding-right:5%; height:30%; overflow:scroll'><table id='matchedWordsTable' style='border: 4px solid black; background-color: antiquewhite;'class='table table-bordered table-hover table-responsive'><thead><tr bgcolor='#ffa834'><th>Relation</th><th>Keyword</th><th>Matched On</th></tr></thead></table></div>");
                 document.getElementById("gameScore").innerHTML = ("You Scored: " + currentGameScore);
                 document.getElementById("highScoretext").innerHTML = ("High Score: " + highScore);
                 distance=61;
@@ -163,13 +163,13 @@ function submitForm(uri){
         type: $('#form').attr('method'),
         data: $('#form').serialize(),
         success: function(data){
-            if(uri=='login'){
-                createSocket();
-                loadHomePage();
-            }else{
+            //if(uri=='login'){
+            //    createSocket();
+            //    loadHomePage();
+            //}else{
                 createSocket();
                 $("#container").html(data);
-            }
+            //}
         }
     });
     return false;
@@ -230,6 +230,34 @@ function createSocket() {
         console.log(firstWord)
         newgame(keyword, mode, roomEndedAt, firstWord);
         answers=answers;
+    });
+
+    socket.on('matches', function(gameguesses){
+        for(var i = 0; i < gameguesses.length; i++){
+            var table = document.getElementById("matchedWordsTable");
+            var row = table.insertRow(i+1);
+            var relation = row.insertCell(0);
+            var keyword = row.insertCell(1);
+            var guess=row.insertCell(2);
+            // Add some text to the new cells:
+            keyword.innerHTML = gameguesses[i].keyword;
+            mode=gameguesses[i].relation;
+            if(mode=="H"){
+                var modetext="Generic Terms  "
+            }else if(mode=="S"){
+                var modetext="Same Meaning  "
+            }else if(mode=="A"){
+                var modetext="Opposites   "
+            }else{
+                var modetext="unrecorgniced mode type: "+mode;
+            }
+            relation.innerHTML = modetext;
+            if(gameguesses[i].correctMatch==false){
+                guess.innerHTML="Passed"; 
+            }else{
+                guess.innerHTML=gameguesses[i].correctMatch;
+            }
+        }
     });
 
     socket.on('match', function(guess){

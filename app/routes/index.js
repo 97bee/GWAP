@@ -16,6 +16,7 @@ module.exports = function(passport) {
       res.render('logIn');
     });
 
+    
     router.post('/login', function(req, res, next){
       passport.authenticate('local-login', function(err, user, info){
         if(err){
@@ -108,7 +109,8 @@ module.exports = function(passport) {
    
     router.get('/highscore', function(req, res){
       if(!req.user){
-        return res.json({highscore: 0});
+        res.render('index', { authenticated: false });
+        return res.json({highscore: "user-not-found"});
       }else{
         return res.json({highscore:req.user.highscore});
       }

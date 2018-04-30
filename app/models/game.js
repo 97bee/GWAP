@@ -5,7 +5,8 @@ const gameSchema    = mongoose.Schema({
    //this is the game schema like the database 
    room         : { type: mongoose.Schema.Types.ObjectId, ref: 'Room' },
    keyword      : { type: String },
-   relation    : { type: String },
+   relation     : { type: String },
+   correctMatch       : { type: String, default: "Pass"},
    guesses      : [{
                     player: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, 
                     guess:  { type: String },
