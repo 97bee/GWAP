@@ -99,7 +99,7 @@ function newgame(keyword, mode, roomEndedAt, firstWord){
             distance=distance-1;
             var countdown= document.getElementById("countdown");
             countdown.innerHTML = "time left: " +(distance) + "s "; 
-            if ((new Date())>=endGametime){
+            if (((new Date())>=endGametime)||(distance<0)){
                 clearInterval(x)
                 socket.emit('gameOver', { room: roomId });
                 $('#container').html("<div class='row', style='margin-top:2%;'><div class='col-xs-12', style=' text-align:right; padding-right:2%'><h3 style='text-align:right' id='highScoretext'> High Score: 0</h3></div></div><div class='row', style='margin-top:5%; text-align:center;'><h1 style='font-size:350%' id='gameScore'> You Scored: 0</h1></div><div class='row', style='margin-top:3%; text-align:center;'><button class='btn btn-lg btn-default', type='submit', style='padding: 4% 10% 4%; font-size:200%' onclick='loadHomePage()'> Home</button></div><div class='row', style='margin-top:3%; text-align:center;'> <button class='btn btn-lg btn-default', type='submit', style='padding:2% 6% 2%; font-size:150%', onclick='highScoreTable(true)'> View High scores </button></div><div class='row' style='padding-left: 5%; padding-top: 5%; padding-right:5%; height:30%; overflow:scroll'><table id='matchedWordsTable' style='border: 4px solid black; background-color: antiquewhite;'class='table table-bordered table-hover table-responsive'><thead><tr bgcolor='#ffa834'><th>Relation</th><th>Keyword</th><th>Matched On</th></tr></thead></table></div>");
