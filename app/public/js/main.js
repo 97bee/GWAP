@@ -17,7 +17,7 @@ function countdown(t) {
         littletimer=littletimer-1;
         document.getElementById("countdown").innerHTML = littletimer + "s ";
         // If the count down is finished, say go! 
-        if ((new Date())>=k){
+        if (((new Date())>=k)||littletimer<0){
             clearInterval(x);
             distance=61;
             document.getElementById("countdown").innerHTML = 'GO!';
